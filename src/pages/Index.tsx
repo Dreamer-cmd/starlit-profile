@@ -5,7 +5,17 @@ import AnimatedButton from "@/components/AnimatedButton";
 import Navbar from "@/components/Navbar";
 import ProfileCard from "@/components/ProfileCard";
 import { cn } from "@/lib/utils";
-import { ArrowDown, LogIn, Rocket, Stars } from "lucide-react";
+import { 
+  ArrowDown, 
+  LogIn, 
+  Rocket, 
+  Stars,
+  MessageCircle, 
+  Palette, 
+  Smartphone, 
+  Globe, 
+  Link2
+} from "lucide-react";
 
 const Index = () => {
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -77,6 +87,7 @@ const Index = () => {
                   icon={<Stars size={18} />} 
                   size="lg" 
                   variant="outline"
+                  onClick={() => window.location.href = "/explore"}
                 >
                   Explore Profiles
                 </AnimatedButton>
@@ -251,8 +262,5 @@ const Index = () => {
     </div>
   );
 };
-
-// Fix missing imports
-import { MessageCircle, Palette, Smartphone, Globe, Link2 } from "lucide-react";
 
 export default Index;

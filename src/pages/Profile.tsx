@@ -1,25 +1,42 @@
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import ParticleBackground from "@/components/ParticleBackground";
 import Navbar from "@/components/Navbar";
 import SocialLinks, { SocialLink } from "@/components/SocialLinks";
+import ProfileEditor from "@/components/ProfileEditor";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, Edit, Share2 } from "lucide-react";
+import { 
+  ChevronLeft, 
+  Edit, 
+  Share2, 
+  Settings,
+  Star,
+  Rocket,
+  MessageCircle,
+  UserRoundPlus,
+  Sparkles,
+  BookOpen
+} from "lucide-react";
 import AnimatedButton from "@/components/AnimatedButton";
+import { toast } from "@/hooks/use-toast";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { AmbientBackground } from "@/components/AmbientBackground";
 
-type ProfileTheme = "default" | "neon" | "cosmic" | "minimal";
+type ProfileTheme = "default" | "neon" | "cosmic" | "minimal" | "galaxy" | "aurora" | "retrowave";
 
 const Profile = () => {
   const { username } = useParams<{ username: string }>();
-  const [theme, setTheme] = useState<ProfileTheme>("default");
-
-  // Sample user data for demo
-  const userData = {
+  const navigate = useNavigate();
+  const [theme, setTheme] = useState<ProfileTheme>("cosmic");
+  const [isEditing, setIsEditing] = useState(false);
+  const [userData, setUserData] = useState({
     name: username || "Cosmic User",
+    username: username || "cosmic_user",
     avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80",
     status: "Digital Explorer",
     bio: "Passionate about technology and design. Building the future one pixel at a time. Always learning, always creating.",
+    featured: "Currently working on a revolutionary space travel app that will change how we think about interstellar journeys.",
     socialLinks: [
       { platform: "Twitter", url: "https://twitter.com" },
       { platform: "GitHub", url: "https://github.com" },
@@ -27,7 +44,7 @@ const Profile = () => {
       { platform: "Instagram", url: "https://instagram.com" },
       { platform: "LinkedIn", url: "https://linkedin.com" },
     ] as SocialLink[],
-  };
+  });
 
   // Theme configuration
   const themeConfigs = {
@@ -36,25 +53,50 @@ const Profile = () => {
       cardClassName: "glassmorphism border-white/10",
       textClassName: "text-cosmic-foreground",
       accentClassName: "bg-accent/20 text-accent",
+      ambient: false,
     },
     neon: {
       bgClassName: "bg-cosmic-dark",
       cardClassName: "bg-cosmic-dark border-accent/50 shadow-[0_0_15px_rgba(139,92,246,0.5)]",
       textClassName: "text-white glow",
       accentClassName: "bg-accent/20 text-accent shadow-[0_0_10px_rgba(139,92,246,0.3)]",
+      ambient: false,
     },
     cosmic: {
       bgClassName: "bg-gradient-to-br from-cosmic to-cosmic-dark",
       cardClassName: "bg-gradient-to-br from-cosmic-dark/80 to-cosmic-dark border-white/10",
       textClassName: "text-gradient",
       accentClassName: "bg-white/10 text-cosmic-foreground",
+      ambient: true,
     },
     minimal: {
       bgClassName: "bg-cosmic",
       cardClassName: "bg-white/5 backdrop-blur-sm border-white/5",
       textClassName: "text-cosmic-foreground",
       accentClassName: "bg-white/10 text-cosmic-foreground",
+      ambient: false,
     },
+    galaxy: {
+      bgClassName: "bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e]",
+      cardClassName: "bg-black/30 backdrop-blur-md border-white/10",
+      textClassName: "text-white",
+      accentClassName: "bg-[#7b68ee]/20 text-[#7b68ee]",
+      ambient: true,
+    },
+    aurora: {
+      bgClassName: "bg-gradient-to-br from-[#000428] to-[#004e92]",
+      cardClassName: "bg-black/20 backdrop-blur-md border-teal-500/30",
+      textClassName: "text-teal-100",
+      accentClassName: "bg-teal-500/20 text-teal-300",
+      ambient: true,
+    },
+    retrowave: {
+      bgClassName: "bg-gradient-to-br from-[#3f0d40] to-[#2b0640]",
+      cardClassName: "bg-black/30 backdrop-blur-md border-[#ff00ff]/30",
+      textClassName: "text-[#ff9ed2]",
+      accentClassName: "bg-[#ff00ff]/20 text-[#ff9ed2]",
+      ambient: true,
+    }
   };
 
   // Animation and parallax effect for planets
@@ -67,6 +109,35 @@ const Profile = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Share functionality
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: `${userData.name}'s x-bio profile`,
+        text: `Check out ${userData.name}'s profile on x-bio`,
+        url: window.location.href,
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(window.location.href)
+        .then(() => {
+          toast({
+            title: "Link copied!",
+            description: "Profile link copied to clipboard",
+          });
+        })
+        .catch(console.error);
+    }
+  };
+
+  const handleSaveProfile = (updatedData: typeof userData) => {
+    setUserData(updatedData);
+    setIsEditing(false);
+    toast({
+      title: "Profile updated!",
+      description: "Your changes have been saved",
+    });
+  };
 
   // Cosmic background elements based on theme
   const renderCosmicBackground = () => {
@@ -107,30 +178,29 @@ const Profile = () => {
         {theme === "neon" && (
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.15),transparent_70%)] z-0" />
         )}
+
+        {theme === "galaxy" && (
+          <>
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071')] bg-cover bg-center opacity-20 z-0" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(123,104,238,0.2),transparent_70%)] z-0" />
+          </>
+        )}
+
+        {theme === "aurora" && (
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(4,120,87,0.2),transparent_70%)] z-0" />
+        )}
+
+        {theme === "retrowave" && (
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(255,0,255,0.2),transparent_70%)] z-0" />
+        )}
       </>
     );
   };
 
-  // Share functionality (simulated)
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: `${userData.name}'s x-bio profile`,
-        text: `Check out ${userData.name}'s profile on x-bio`,
-        url: window.location.href,
-      }).catch(console.error);
-    } else {
-      navigator.clipboard.writeText(window.location.href)
-        .then(() => {
-          alert("Profile link copied to clipboard!");
-        })
-        .catch(console.error);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
-      <ParticleBackground className={theme === "neon" ? "opacity-70" : "opacity-40"} />
+      <ParticleBackground className={theme === "neon" ? "opacity-70" : theme === "cosmic" ? "opacity-50" : "opacity-30"} />
+      {themeConfigs[theme].ambient && <AmbientBackground theme={theme} />}
       <Navbar />
       
       <main className={cn(
@@ -141,13 +211,13 @@ const Profile = () => {
         
         <div className="container mx-auto max-w-6xl relative z-10">
           <div className="mb-8 flex items-center justify-between">
-            <a 
-              href="/"
+            <Link 
+              to="/"
               className="inline-flex items-center text-cosmic-foreground/80 hover:text-cosmic-foreground transition-colors"
             >
               <ChevronLeft size={16} />
               <span className="ml-1">Back to Home</span>
-            </a>
+            </Link>
             
             <div className="flex items-center gap-2">
               <AnimatedButton 
@@ -162,8 +232,17 @@ const Profile = () => {
                 icon={<Edit size={16} />} 
                 variant="ghost" 
                 size="sm"
+                onClick={() => setIsEditing(true)}
               >
                 Edit
+              </AnimatedButton>
+              <AnimatedButton 
+                icon={<Settings size={16} />} 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate("/settings")}
+              >
+                Settings
               </AnimatedButton>
             </div>
           </div>
@@ -185,6 +264,9 @@ const Profile = () => {
                         "w-32 h-32 rounded-full object-cover border-2",
                         theme === "neon" ? "border-accent shadow-[0_0_10px_rgba(139,92,246,0.7)]" : 
                         theme === "cosmic" ? "border-white/30" : 
+                        theme === "aurora" ? "border-teal-500/50" :
+                        theme === "retrowave" ? "border-[#ff00ff]/50" :
+                        theme === "galaxy" ? "border-[#7b68ee]/50" :
                         "border-white/20"
                       )}
                     />
@@ -193,6 +275,9 @@ const Profile = () => {
                         "absolute -inset-2 rounded-full opacity-20 blur-md -z-10",
                         theme === "neon" && "bg-accent animate-pulse-glow",
                         theme === "cosmic" && "bg-accent-gradient animate-rotate-slow",
+                        theme === "aurora" && "bg-teal-500/50 animate-pulse-glow",
+                        theme === "retrowave" && "bg-[#ff00ff]/50 animate-pulse-glow",
+                        theme === "galaxy" && "bg-[#7b68ee]/50 animate-pulse-glow",
                         (theme === "default" || theme === "minimal") && "bg-white/20"
                       )}
                     />
@@ -228,20 +313,119 @@ const Profile = () => {
                   </div>
                 </div>
                 
-                {/* Additional profile content could go here */}
+                {/* Featured content */}
                 <div className="mt-12 pt-8 border-t border-white/10">
                   <h2 className={cn(
-                    "text-xl font-bold mb-4",
+                    "text-xl font-bold mb-4 flex items-center gap-2",
                     themeConfigs[theme].textClassName
                   )}>
-                    About Me
+                    <Star size={18} className={theme === "aurora" ? "text-teal-300" : theme === "retrowave" ? "text-[#ff9ed2]" : ""} />
+                    Featured
                   </h2>
-                  <p className="text-cosmic-foreground/80 leading-relaxed mb-6">
-                    This is a sample profile page for the x-bio platform. In a real implementation, users would be able to customize this section with their own content, including adding rich text, images, and other media.
+                  <div className={cn(
+                    "p-6 rounded-xl mb-8",
+                    theme === "neon" ? "bg-accent/5 border border-accent/30" : 
+                    theme === "cosmic" ? "bg-white/5 border border-white/10" : 
+                    theme === "aurora" ? "bg-teal-500/5 border border-teal-500/30" :
+                    theme === "retrowave" ? "bg-[#ff00ff]/5 border border-[#ff00ff]/30" :
+                    theme === "galaxy" ? "bg-[#7b68ee]/5 border border-[#7b68ee]/30" :
+                    "bg-white/5 border border-white/10"
+                  )}>
+                    <p className="text-cosmic-foreground/90 leading-relaxed">
+                      {userData.featured}
+                    </p>
+                  </div>
+
+                  <h2 className={cn(
+                    "text-xl font-bold mb-6 flex items-center gap-2",
+                    themeConfigs[theme].textClassName
+                  )}>
+                    <Rocket size={18} className={theme === "aurora" ? "text-teal-300" : theme === "retrowave" ? "text-[#ff9ed2]" : ""} />
+                    Projects & Achievements
+                  </h2>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    {[
+                      {
+                        title: "Project Alpha",
+                        description: "A revolutionary space travel app that will change how we think about interstellar journeys.",
+                        icon: <Rocket size={16} />
+                      },
+                      {
+                        title: "Cosmic Community",
+                        description: "Building a community of space enthusiasts and explorers.",
+                        icon: <UserRoundPlus size={16} />
+                      },
+                      {
+                        title: "Stellar Design",
+                        description: "Award-winning UI/UX design for space-themed applications.",
+                        icon: <Sparkles size={16} />
+                      },
+                      {
+                        title: "Space Chronicles",
+                        description: "A blog about space exploration and the future of humanity.",
+                        icon: <BookOpen size={16} />
+                      }
+                    ].map((project, index) => (
+                      <div 
+                        key={index}
+                        className={cn(
+                          "p-4 rounded-lg border transition-all duration-300 hover:translate-y-[-2px]",
+                          theme === "neon" ? "border-accent/20 bg-accent/5" : 
+                          theme === "cosmic" ? "border-white/10 bg-white/5" : 
+                          theme === "aurora" ? "border-teal-500/20 bg-teal-500/5" :
+                          theme === "retrowave" ? "border-[#ff00ff]/20 bg-[#ff00ff]/5" :
+                          theme === "galaxy" ? "border-[#7b68ee]/20 bg-[#7b68ee]/5" :
+                          "border-white/10 bg-white/5"
+                        )}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={cn(
+                            "p-2 rounded-full",
+                            theme === "neon" ? "bg-accent/10" : 
+                            theme === "cosmic" ? "bg-white/10" : 
+                            theme === "aurora" ? "bg-teal-500/10" :
+                            theme === "retrowave" ? "bg-[#ff00ff]/10" :
+                            theme === "galaxy" ? "bg-[#7b68ee]/10" :
+                            "bg-white/10"
+                          )}>
+                            {project.icon}
+                          </div>
+                          <div>
+                            <h3 className="font-medium mb-1">{project.title}</h3>
+                            <p className="text-cosmic-foreground/70 text-sm">{project.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <h2 className={cn(
+                    "text-xl font-bold mb-4 flex items-center gap-2",
+                    themeConfigs[theme].textClassName
+                  )}>
+                    <MessageCircle size={18} className={theme === "aurora" ? "text-teal-300" : theme === "retrowave" ? "text-[#ff9ed2]" : ""} />
+                    Connect
+                  </h2>
+                  <p className="text-cosmic-foreground/80 leading-relaxed mb-4">
+                    Feel free to reach out for collaborations, questions, or just to say hello! I'm always open to connecting with fellow cosmic explorers.
                   </p>
-                  <p className="text-cosmic-foreground/80 leading-relaxed">
-                    The page features stunning animations, particle effects, and a cosmic theme that can be customized to match the user's personal brand.
-                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <AnimatedButton
+                      icon={<MessageCircle size={16} />}
+                      variant="primary"
+                      size="md"
+                    >
+                      Send Message
+                    </AnimatedButton>
+                    <AnimatedButton
+                      icon={<UserRoundPlus size={16} />}
+                      variant="outline"
+                      size="md"
+                    >
+                      Follow
+                    </AnimatedButton>
+                  </div>
                 </div>
               </div>
             </div>
@@ -260,13 +444,16 @@ const Profile = () => {
                 </h2>
                 
                 <div className="space-y-3">
-                  {(["default", "neon", "cosmic", "minimal"] as ProfileTheme[]).map((themeOption) => (
+                  {(["default", "neon", "cosmic", "minimal", "galaxy", "aurora", "retrowave"] as ProfileTheme[]).map((themeOption) => (
                     <button
                       key={themeOption}
                       className={cn(
                         "w-full p-3 rounded-xl border transition-all duration-300 flex items-center",
                         theme === themeOption 
-                          ? "border-accent bg-accent/10" 
+                          ? themeOption === "aurora" ? "border-teal-500 bg-teal-500/10" :
+                            themeOption === "retrowave" ? "border-[#ff00ff] bg-[#ff00ff]/10" :
+                            themeOption === "galaxy" ? "border-[#7b68ee] bg-[#7b68ee]/10" :
+                            "border-accent bg-accent/10" 
                           : "border-white/10 hover:border-white/30"
                       )}
                       onClick={() => setTheme(themeOption)}
@@ -278,6 +465,9 @@ const Profile = () => {
                           themeOption === "neon" && "bg-accent",
                           themeOption === "cosmic" && "bg-accent-gradient",
                           themeOption === "minimal" && "bg-white",
+                          themeOption === "galaxy" && "bg-gradient-to-br from-[#7b68ee] to-[#24243e]",
+                          themeOption === "aurora" && "bg-gradient-to-br from-teal-300 to-teal-500",
+                          themeOption === "retrowave" && "bg-gradient-to-br from-[#ff9ed2] to-[#ff00ff]",
                         )}
                       />
                       <span className="capitalize">{themeOption}</span>
@@ -290,16 +480,32 @@ const Profile = () => {
                     "text-lg font-medium mb-3",
                     themeConfigs[theme].textClassName
                   )}>
-                    Profile Settings
+                    Profile Stats
                   </h3>
-                  <p className="text-cosmic-foreground/80 text-sm mb-4">
-                    In the full application, logged-in users would be able to customize their profile and theme settings here.
-                  </p>
+                  <div className="space-y-2 mb-6">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-cosmic-foreground/70">Profile Views</span>
+                      <span className="font-medium">2,547</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-cosmic-foreground/70">Followers</span>
+                      <span className="font-medium">328</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-cosmic-foreground/70">Following</span>
+                      <span className="font-medium">142</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-cosmic-foreground/70">Joined</span>
+                      <span className="font-medium">Apr 2023</span>
+                    </div>
+                  </div>
                   <AnimatedButton
                     variant="primary"
                     size="md"
                     className="w-full"
                     icon={<Edit size={16} />}
+                    onClick={() => setIsEditing(true)}
                   >
                     Edit Profile
                   </AnimatedButton>
@@ -316,6 +522,9 @@ const Profile = () => {
         theme === "neon" ? "bg-cosmic-dark border-accent/30" :
         theme === "cosmic" ? "bg-cosmic-dark/90 border-white/10" :
         theme === "minimal" ? "bg-cosmic-dark/50 backdrop-blur-md border-white/5" :
+        theme === "aurora" ? "bg-[#000428]/90 border-teal-500/20" :
+        theme === "retrowave" ? "bg-[#3f0d40]/90 border-[#ff00ff]/20" :
+        theme === "galaxy" ? "bg-[#0f0c29]/90 border-[#7b68ee]/20" :
         "bg-cosmic-dark/80 border-white/10"
       )}>
         <div className="container mx-auto text-center text-sm text-cosmic-foreground/60">
@@ -324,10 +533,17 @@ const Profile = () => {
             <span>•</span>
             <span>© {new Date().getFullYear()}</span>
             <span>•</span>
-            <a href="/" className="hover:text-cosmic-foreground transition-colors">Create your own</a>
+            <Link to="/" className="hover:text-cosmic-foreground transition-colors">Create your own</Link>
           </div>
         </div>
       </footer>
+
+      {/* Edit Profile Dialog */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="sm:max-w-[600px] bg-cosmic-dark border-white/10">
+          <ProfileEditor userData={userData} onSave={handleSaveProfile} onCancel={() => setIsEditing(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
