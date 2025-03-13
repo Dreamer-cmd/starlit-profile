@@ -1,10 +1,9 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { SparklesCore } from "@/components/ui/sparkles";
 import AnimatedButton from "@/components/AnimatedButton";
 import ProfileCard from "@/components/ProfileCard";
-import { LogIn, Sparkles, Rocket, BookOpen, Edit, Share2 } from "lucide-react";
+import { LogIn, Sparkles, Rocket, BookOpen } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/context/AuthContext";
 
