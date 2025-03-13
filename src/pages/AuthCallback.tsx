@@ -37,9 +37,11 @@ export default function AuthCallback() {
             featured: "",
             theme: "cosmic",
           });
+          
+          navigate(`/${username}`);
+        } else {
+          navigate(`/${profile.username}`);
         }
-
-        navigate(`/${profile?.username || username}`);
       } else {
         navigate('/');
       }
