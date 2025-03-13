@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import ParticleBackground from "@/components/ParticleBackground";
@@ -22,15 +21,31 @@ import AnimatedButton from "@/components/AnimatedButton";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AmbientBackground } from "@/components/AmbientBackground";
+import { useAuth } from "@/context/AuthContext";
+import { useProfile, useUpdateProfile } from "@/hooks/use-profile";
 
 type ProfileTheme = "default" | "neon" | "cosmic" | "minimal" | "galaxy" | "aurora" | "retrowave";
 
 const Profile = () => {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
-  const [theme, setTheme] = useState<ProfileTheme>("cosmic");
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [userData, setUserData] = useState({
+  
+  const { data: profileData, isLoading, error } = useProfile(username || "");
+  const updateProfile = useUpdateProfile();
+  
+  const [theme, setTheme] = useState<ProfileTheme>("cosmic");
+  
+  useEffect(() => {
+    if (profileData?.theme) {
+      setTheme(profileData.theme as ProfileTheme);
+    }
+  }, [profileData]);
+
+  const isOwner = user && profileData && user.id === profileData.id;
+
+  const defaultProfile = {
     name: username || "Cosmic User",
     username: username || "cosmic_user",
     avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80",
@@ -41,12 +56,11 @@ const Profile = () => {
       { platform: "Twitter", url: "https://twitter.com" },
       { platform: "GitHub", url: "https://github.com" },
       { platform: "Discord", url: "https://discord.com" },
-      { platform: "Instagram", url: "https://instagram.com" },
-      { platform: "LinkedIn", url: "https://linkedin.com" },
     ] as SocialLink[],
-  });
+  };
 
-  // Theme configuration
+  const userData = profileData || defaultProfile;
+
   const themeConfigs = {
     default: {
       bgClassName: "bg-cosmic bg-opacity-95",
@@ -99,7 +113,6 @@ const Profile = () => {
     }
   };
 
-  // Animation and parallax effect for planets
   const [scrollY, setScrollY] = useState(0);
   useEffect(() => {
     const handleScroll = () => {
@@ -110,7 +123,6 @@ const Profile = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Share functionality
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
@@ -131,15 +143,26 @@ const Profile = () => {
   };
 
   const handleSaveProfile = (updatedData: typeof userData) => {
-    setUserData(updatedData);
-    setIsEditing(false);
-    toast({
-      title: "Profile updated!",
-      description: "Your changes have been saved",
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to save changes",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateProfile.mutate({
+      profileData: {
+        ...updatedData,
+        theme: theme,
+      },
+      userId: user.id,
     });
+    
+    setIsEditing(false);
   };
 
-  // Cosmic background elements based on theme
   const renderCosmicBackground = () => {
     if (theme === "minimal") return null;
 
@@ -197,6 +220,35 @@ const Profile = () => {
     );
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-cosmic">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gradient mb-4">Loading profile...</h1>
+          <div className="w-16 h-16 border-t-4 border-accent rounded-full animate-spin mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !profileData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-cosmic">
+        <div className="text-center max-w-md mx-auto p-6 glassmorphism rounded-xl">
+          <h1 className="text-2xl font-bold text-gradient mb-4">Profile Not Found</h1>
+          <p className="mb-6 text-cosmic-foreground/80">
+            The profile you're looking for doesn't exist or has been removed.
+          </p>
+          <Link to="/">
+            <AnimatedButton variant="primary" size="md">
+              Return Home
+            </AnimatedButton>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <ParticleBackground className={theme === "neon" ? "opacity-70" : theme === "cosmic" ? "opacity-50" : "opacity-30"} />
@@ -228,34 +280,37 @@ const Profile = () => {
               >
                 Share
               </AnimatedButton>
-              <AnimatedButton 
-                icon={<Edit size={16} />} 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setIsEditing(true)}
-              >
-                Edit
-              </AnimatedButton>
-              <AnimatedButton 
-                icon={<Settings size={16} />} 
-                variant="outline" 
-                size="sm"
-                onClick={() => navigate("/settings")}
-              >
-                Settings
-              </AnimatedButton>
+              
+              {isOwner && (
+                <>
+                  <AnimatedButton 
+                    icon={<Edit size={16} />} 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    Edit
+                  </AnimatedButton>
+                  <AnimatedButton 
+                    icon={<Settings size={16} />} 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate("/settings")}
+                  >
+                    Settings
+                  </AnimatedButton>
+                </>
+              )}
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Profile Information */}
             <div className="md:col-span-2">
               <div className={cn(
                 "rounded-2xl p-8 transition-all duration-500 h-full",
                 themeConfigs[theme].cardClassName
               )}>
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                  {/* Avatar */}
                   <div className="relative">
                     <img
                       src={userData.avatar}
@@ -284,7 +339,6 @@ const Profile = () => {
                   </div>
                   
                   <div className="text-center md:text-left">
-                    {/* Name */}
                     <h1 className={cn(
                       "text-3xl md:text-4xl font-bold mb-2",
                       themeConfigs[theme].textClassName
@@ -292,7 +346,6 @@ const Profile = () => {
                       {userData.name}
                     </h1>
                     
-                    {/* Status */}
                     <div className={cn(
                       "inline-block px-3 py-1 rounded-full text-sm mb-4",
                       themeConfigs[theme].accentClassName
@@ -300,12 +353,10 @@ const Profile = () => {
                       {userData.status}
                     </div>
                     
-                    {/* Bio */}
                     <p className="text-cosmic-foreground/80 mb-6 max-w-lg leading-relaxed">
                       {userData.bio}
                     </p>
                     
-                    {/* Social Links */}
                     <SocialLinks 
                       links={userData.socialLinks} 
                       className="justify-center md:justify-start"
@@ -313,7 +364,6 @@ const Profile = () => {
                   </div>
                 </div>
                 
-                {/* Featured content */}
                 <div className="mt-12 pt-8 border-t border-white/10">
                   <h2 className={cn(
                     "text-xl font-bold mb-4 flex items-center gap-2",
@@ -430,7 +480,6 @@ const Profile = () => {
               </div>
             </div>
             
-            {/* Theme Selector */}
             <div className="md:col-span-1">
               <div className={cn(
                 "rounded-2xl p-6 transition-all duration-500 sticky top-24",
@@ -516,7 +565,6 @@ const Profile = () => {
         </div>
       </main>
       
-      {/* Footer */}
       <footer className={cn(
         "py-6 px-6 border-t transition-colors duration-500",
         theme === "neon" ? "bg-cosmic-dark border-accent/30" :
@@ -538,8 +586,7 @@ const Profile = () => {
         </div>
       </footer>
 
-      {/* Edit Profile Dialog */}
-      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+      <Dialog open={isEditing && isOwner} onOpenChange={setIsEditing}>
         <DialogContent className="sm:max-w-[600px] bg-cosmic-dark border-white/10">
           <ProfileEditor userData={userData} onSave={handleSaveProfile} onCancel={() => setIsEditing(false)} />
         </DialogContent>

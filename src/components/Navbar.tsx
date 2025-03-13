@@ -1,130 +1,208 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { Menu, X, LogIn, LogOut, UserCircle, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-import AnimatedButton from "./AnimatedButton";
-import { Menu, X, LogIn } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-const Navbar: React.FC = () => {
+const Navbar = ({ className }: { className?: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-
-  const navLinks = [
-    { title: "Home", path: "/" },
-    { title: "Explore", path: "/explore" },
-    { title: "Features", path: "/features" },
-  ];
+  const { user, signIn, signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      setIsScrolled(window.scrollY > 20);
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu when route changes
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location.pathname]);
+  const routes = [
+    { name: "Home", path: "/" },
+    { name: "Explore", path: "/explore" },
+  ];
 
   return (
-    <header
+    <nav
       className={cn(
-        "fixed top-0 left-0 w-full z-50 transition-all duration-300 px-6 py-4",
-        isScrolled
-          ? "bg-cosmic-dark/80 backdrop-blur-md border-b border-white/5 shadow-md"
-          : "bg-transparent"
+        "fixed top-0 left-0 right-0 z-40 transition-all duration-300",
+        isScrolled ? "bg-cosmic-dark/80 backdrop-blur-md py-3 shadow-lg" : "bg-transparent py-5",
+        className
       )}
     >
-      <div className="container mx-auto flex items-center justify-between">
-        {/* Logo */}
-        <Link
-          to="/"
-          className="text-2xl font-bold tracking-tighter text-gradient hover:scale-105 transition-transform"
-        >
-          x-bio
+      <div className="container mx-auto px-4 flex justify-between items-center">
+        <Link to="/" className="flex items-center">
+          <span className="text-2xl font-bold text-gradient">x-bio</span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-1">
-          {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={cn(
-                "px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:text-white",
-                location.pathname === link.path
-                  ? "text-white bg-white/10"
-                  : "text-white/70 hover:bg-white/5"
-              )}
-            >
-              {link.title}
-            </Link>
-          ))}
-        </nav>
+        {/* Desktop Menu */}
+        <div className="hidden md:flex items-center gap-8">
+          <div className="flex gap-6">
+            {routes.map((route) => (
+              <Link
+                key={route.path}
+                to={route.path}
+                className={cn(
+                  "text-cosmic-foreground/80 hover:text-cosmic-foreground transition-colors",
+                  location.pathname === route.path && "text-cosmic-foreground font-medium"
+                )}
+              >
+                {route.name}
+              </Link>
+            ))}
+          </div>
 
-        {/* Login Button */}
-        <div className="hidden md:block">
-          <AnimatedButton 
-            icon={<LogIn size={16} />} 
-            variant="primary" 
-            size="md"
-          >
-            Login with Discord
-          </AnimatedButton>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 border border-white/10 rounded-full pl-3 pr-1 py-1 hover:bg-white/5 transition-colors">
+                  <span className="text-sm text-cosmic-foreground">
+                    {user.user_metadata.name || user.user_metadata.username || user.email?.split('@')[0]}
+                  </span>
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={user.user_metadata.avatar_url} alt="User avatar" />
+                    <AvatarFallback className="bg-cosmic-dark text-xs">
+                      {user.email?.substring(0, 2).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-cosmic-dark border-white/10">
+                <DropdownMenuLabel className="text-gradient">My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem asChild>
+                  <Link to={`/${user.user_metadata.username || user.id}`} className="cursor-pointer">
+                    <UserCircle className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/settings" className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem onClick={signOut} className="text-red-400 cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sign out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <button
+              onClick={signIn}
+              className="bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-md transition-colors flex items-center gap-2"
+            >
+              <LogIn size={16} />
+              <span>Sign In</span>
+            </button>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-white focus:outline-none"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          onClick={() => setIsOpen(!isOpen)}
+          className="md:hidden text-cosmic-foreground"
         >
-          {isMobileMenuOpen ? (
-            <X size={24} className="text-white" />
-          ) : (
-            <Menu size={24} className="text-white" />
-          )}
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
       {/* Mobile Menu */}
-      <div
-        className={cn(
-          "fixed inset-0 z-40 bg-cosmic-dark/95 backdrop-blur-lg flex flex-col px-6 py-20 md:hidden transition-transform duration-300 ease-in-out",
-          isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden bg-cosmic-dark/95 backdrop-blur-md absolute top-full left-0 right-0 border-t border-white/10 overflow-hidden"
+          >
+            <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
+              {routes.map((route) => (
+                <Link
+                  key={route.path}
+                  to={route.path}
+                  className={cn(
+                    "py-2 text-cosmic-foreground/80 hover:text-cosmic-foreground transition-colors",
+                    location.pathname === route.path && "text-cosmic-foreground font-medium"
+                  )}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {route.name}
+                </Link>
+              ))}
+              <div className="border-t border-white/10 pt-4 mt-2">
+                {user ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={user.user_metadata.avatar_url} alt="User avatar" />
+                        <AvatarFallback className="bg-cosmic-dark">
+                          {user.email?.substring(0, 2).toUpperCase() || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">
+                          {user.user_metadata.name || user.user_metadata.username || user.email?.split('@')[0]}
+                        </div>
+                        <div className="text-sm text-cosmic-foreground/70">
+                          {user.email}
+                        </div>
+                      </div>
+                    </div>
+                    <Link
+                      to={`/${user.user_metadata.username || user.id}`}
+                      className="flex items-center gap-2 py-2 text-cosmic-foreground/80 hover:text-cosmic-foreground transition-colors"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <UserCircle size={16} />
+                      <span>Profile</span>
+                    </Link>
+                    <Link
+                      to="/settings"
+                      className="flex items-center gap-2 py-2 text-cosmic-foreground/80 hover:text-cosmic-foreground transition-colors"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <Settings size={16} />
+                      <span>Settings</span>
+                    </Link>
+                    <button
+                      onClick={() => {
+                        signOut();
+                        setIsOpen(false);
+                      }}
+                      className="flex items-center gap-2 py-2 text-red-400 hover:text-red-300 transition-colors w-full text-left"
+                    >
+                      <LogOut size={16} />
+                      <span>Sign out</span>
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      signIn();
+                      setIsOpen(false);
+                    }}
+                    className="w-full bg-accent hover:bg-accent/90 text-white py-2 rounded-md transition-colors flex items-center justify-center gap-2"
+                  >
+                    <LogIn size={16} />
+                    <span>Sign In with Discord</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </motion.div>
         )}
-      >
-        <nav className="flex flex-col space-y-4 items-center">
-          {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={cn(
-                "px-4 py-3 w-full text-center rounded-lg text-base font-medium transition-all",
-                location.pathname === link.path
-                  ? "text-white bg-accent/20 border border-accent/30"
-                  : "text-white/70 hover:bg-white/5"
-              )}
-            >
-              {link.title}
-            </Link>
-          ))}
-          <div className="pt-4 w-full">
-            <AnimatedButton 
-              icon={<LogIn size={16} />} 
-              variant="primary" 
-              size="md"
-              className="w-full mt-4"
-            >
-              Login with Discord
-            </AnimatedButton>
-          </div>
-        </nav>
-      </div>
-    </header>
+      </AnimatePresence>
+    </nav>
   );
 };
 
