@@ -1,12 +1,12 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { SparklesCore } from "@/components/ui/sparkles";
 import AnimatedButton from "@/components/AnimatedButton";
 import ProfileCard from "@/components/ProfileCard";
 import { LogIn, Sparkles, Rocket, BookOpen, Edit, Share2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/context/AuthContext";
+import ParticleBackground from "@/components/ParticleBackground";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -14,24 +14,17 @@ const Index = () => {
 
   return (
     <div className="relative min-h-screen bg-cosmic overflow-hidden">
-      {/* Background Animation */}
-      <div className="absolute inset-0 w-full h-full">
-        <SparklesCore
-          id="tsparticlesfullpage"
-          background="transparent"
-          minSize={0.6}
-          maxSize={1.4}
-          particleDensity={60}
-          className="w-full h-full"
-          particleColor="#FFFFFF"
-        />
-      </div>
+      {/* Enhanced Background Animation */}
+      <ParticleBackground 
+        density={80}
+        colorPalette={["#3B82F6", "#8B5CF6", "#10B981", "#F97316", "#FFFFFF"]}
+      />
 
       <Navbar />
 
       <main className="relative pt-32 pb-16 px-4 sm:px-6 lg:px-8 flex flex-col items-center overflow-hidden">
         <div className="max-w-5xl mx-auto text-center mb-16 relative z-10">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 text-gradient">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 text-gradient animate-pulse-glow">
             Your Cosmic Identity
           </h1>
           <p className="text-lg md:text-xl text-cosmic-foreground/80 mb-8 max-w-2xl mx-auto">
@@ -100,7 +93,7 @@ const Index = () => {
                   { platform: "GitHub", url: "https://github.com" },
                   { platform: "LinkedIn", url: "https://linkedin.com" },
                 ],
-                theme: "cosmic"
+                theme: "galaxy"
               },
               {
                 name: "Astral Artist",
@@ -111,7 +104,7 @@ const Index = () => {
                   { platform: "Behance", url: "https://behance.net" },
                   { platform: "Instagram", url: "https://instagram.com" },
                 ],
-                theme: "aurora"
+                theme: "retrowave"
               }
             ].map((profile, index) => (
               <ProfileCard
@@ -122,7 +115,7 @@ const Index = () => {
                 bio={profile.bio}
                 socialLinks={profile.socialLinks}
                 theme={profile.theme as any}
-                className="transform hover:scale-105 transition-all duration-300"
+                className="transform hover:scale-105 transition-all duration-300 glassmorphism"
               />
             ))}
           </div>
@@ -152,8 +145,8 @@ const Index = () => {
                 description: "Share your profile link anywhere to showcase your digital presence"
               }
             ].map((step, index) => (
-              <div key={index} className="bg-cosmic/50 backdrop-blur-sm border border-white/10 rounded-xl p-6 text-center">
-                <div className="bg-cosmic-dark/50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div key={index} className="glassmorphism rounded-xl p-6 text-center hover:border-accent/30 transition-all duration-300">
+                <div className="bg-cosmic-dark/50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
                   {step.icon}
                 </div>
                 <h3 className="text-xl font-bold mb-2">{step.title}</h3>
@@ -164,7 +157,7 @@ const Index = () => {
         </div>
       </main>
 
-      <footer className="bg-cosmic-dark/80 border-t border-white/10 py-6 px-6 relative z-10">
+      <footer className="glassmorphism border-t border-white/10 py-6 px-6 relative z-10 mt-20">
         <div className="container mx-auto text-center text-sm text-cosmic-foreground/60">
           <div className="flex justify-center items-center gap-2">
             <span className="text-gradient font-bold">x-bio</span>

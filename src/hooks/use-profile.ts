@@ -16,10 +16,10 @@ let demoProfiles = {
     featured: 'Currently working on a revolutionary space travel app that will change how we think about interstellar journeys.',
     theme: 'neon',
     socialLinks: [
-      { platform: 'GitHub', url: 'https://github.com' },
-      { platform: 'LinkedIn', url: 'https://linkedin.com' },
-      { platform: 'Twitter', url: 'https://twitter.com' },
-      { platform: 'Instagram', url: 'https://instagram.com' },
+      { platform: "GitHub", url: "https://github.com" },
+      { platform: "LinkedIn", url: "https://linkedin.com" },
+      { platform: "Twitter", url: "https://twitter.com" },
+      { platform: "Instagram", url: "https://instagram.com" },
     ] as SocialLink[]
   },
   'cosmic_dev': {
@@ -32,8 +32,8 @@ let demoProfiles = {
     featured: 'Just launched a new design system for enterprise applications.',
     theme: 'cosmic',
     socialLinks: [
-      { platform: 'Dribbble', url: 'https://dribbble.com' },
-      { platform: 'Behance', url: 'https://behance.net' },
+      { platform: "Dribbble", url: "https://dribbble.com" },
+      { platform: "Behance", url: "https://behance.net" },
     ] as SocialLink[]
   },
   'tech_wizard': {
@@ -44,10 +44,38 @@ let demoProfiles = {
     status: 'DevOps Engineer',
     bio: 'Automating everything. Kubernetes enthusiast and cloud native advocate.',
     featured: 'Building the future of cloud infrastructure.',
+    theme: 'galaxy',
+    socialLinks: [
+      { platform: "GitHub", url: "https://github.com/techwizard" },
+      { platform: "Twitter", url: "https://twitter.com/tech_wizard" },
+    ] as SocialLink[]
+  },
+  'digital_artist': {
+    id: 'digital-artist-id',
+    name: 'Digital Artist',
+    username: 'digital_artist',
+    avatar: 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
+    status: 'Creative Explorer',
+    bio: 'Creating digital art across multiple mediums. Pushing the boundaries of imagination.',
+    featured: 'My latest NFT collection explores the intersection of technology and emotion.',
+    theme: 'retrowave',
+    socialLinks: [
+      { platform: "Instagram", url: "https://instagram.com/digital_artist" },
+      { platform: "ArtStation", url: "https://artstation.com/digital_artist" },
+    ] as SocialLink[]
+  },
+  'nature_lover': {
+    id: 'nature-lover-id',
+    name: 'Nature Explorer',
+    username: 'nature_lover',
+    avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
+    status: 'Environmental Photographer',
+    bio: 'Documenting the beauty of our planet through photography and conservation efforts.',
+    featured: 'My photo series "Hidden Wilderness" was featured in National Geographic.',
     theme: 'aurora',
     socialLinks: [
-      { platform: 'GitHub', url: 'https://github.com/techwizard' },
-      { platform: 'Twitter', url: 'https://twitter.com/tech_wizard' },
+      { platform: "Instagram", url: "https://instagram.com/nature_lover" },
+      { platform: "Flickr", url: "https://flickr.com/nature_lover" },
     ] as SocialLink[]
   }
 };

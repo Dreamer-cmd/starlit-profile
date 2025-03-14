@@ -5,11 +5,13 @@ import { cn } from "@/lib/utils";
 type AmbientBackgroundProps = {
   theme: string;
   className?: string;
+  intensity?: number;
 };
 
 export const AmbientBackground: React.FC<AmbientBackgroundProps> = ({ 
   theme,
-  className 
+  className,
+  intensity = 0.3
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
@@ -20,18 +22,23 @@ export const AmbientBackground: React.FC<AmbientBackgroundProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Set canvas dimensions
+    // Set canvas dimensions with device pixel ratio
     const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      ctx.scale(dpr, dpr);
     };
     
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
     
     // Particle settings based on theme
     let particleColor: string;
-    let backgroundGradient: [string, string];
+    let primaryColor: string;
+    let secondaryColor: string;
+    let tertiaryColor: string;
     let particleCount = 100;
     let particleSize = 3;
     let particleSpeed = 0.5;
@@ -40,27 +47,44 @@ export const AmbientBackground: React.FC<AmbientBackgroundProps> = ({
     switch (theme) {
       case 'cosmic':
         particleColor = '#8B5CF6';
-        backgroundGradient = ['rgba(15, 23, 42, 0)', 'rgba(15, 23, 42, 0)'];
+        primaryColor = '#3B82F6';
+        secondaryColor = '#8B5CF6';
+        tertiaryColor = '#7C3AED';
         particleCount = 100;
         break;
-      case 'galaxy':
-        particleColor = '#7B68EE';
-        backgroundGradient = ['rgba(15, 12, 41, 0)', 'rgba(15, 12, 41, 0)'];
-        particleCount = 150;
+      case 'neon':
+        particleColor = '#3B82F6';
+        primaryColor = '#2563EB';
+        secondaryColor = '#60A5FA';
+        tertiaryColor = '#1D4ED8';
+        particleCount = 120;
         break;
       case 'aurora':
         particleColor = '#10B981';
-        backgroundGradient = ['rgba(0, 4, 40, 0)', 'rgba(0, 4, 40, 0)'];
+        primaryColor = '#059669';
+        secondaryColor = '#34D399';
+        tertiaryColor = '#047857';
         particleCount = 80;
         break;
+      case 'galaxy':
+        particleColor = '#7B68EE';
+        primaryColor = '#8B5CF6';
+        secondaryColor = '#C4B5FD';
+        tertiaryColor = '#6D28D9';
+        particleCount = 130;
+        break;
       case 'retrowave':
-        particleColor = '#FF00FF';
-        backgroundGradient = ['rgba(63, 13, 64, 0)', 'rgba(63, 13, 64, 0)'];
-        particleCount = 120;
+        particleColor = '#EC4899';
+        primaryColor = '#BE185D';
+        secondaryColor = '#F472B6';
+        tertiaryColor = '#DB2777';
+        particleCount = 110;
         break;
       default:
-        particleColor = '#FFFFFF';
-        backgroundGradient = ['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0)'];
+        particleColor = '#8B5CF6';
+        primaryColor = '#3B82F6';
+        secondaryColor = '#8B5CF6';
+        tertiaryColor = '#7C3AED';
         particleCount = 100;
     }
     
@@ -72,30 +96,85 @@ export const AmbientBackground: React.FC<AmbientBackgroundProps> = ({
       vy: number;
       size: number;
       color: string;
+      originalSize: number;
+      pulsate: boolean;
+      pulsateSpeed: number;
+      pulsateDirection: number;
       
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
         this.vx = (Math.random() - 0.5) * particleSpeed;
         this.vy = (Math.random() - 0.5) * particleSpeed;
-        this.size = (Math.random() * particleSize) + 0.5;
-        this.color = particleColor;
+        this.originalSize = (Math.random() * particleSize) + 0.5;
+        this.size = this.originalSize;
+        
+        // Randomly choose a color from the theme palette
+        const colors = [particleColor, primaryColor, secondaryColor, tertiaryColor];
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Add pulsating effect to some particles
+        this.pulsate = Math.random() > 0.7;
+        this.pulsateSpeed = Math.random() * 0.03 + 0.01;
+        this.pulsateDirection = 1;
       }
       
       update() {
         this.x += this.vx;
         this.y += this.vy;
         
-        // Bounce off edges
-        if (this.x < 0 || this.x > canvas.width) this.vx = -this.vx;
-        if (this.y < 0 || this.y > canvas.height) this.vy = -this.vy;
+        // Pulsate effect
+        if (this.pulsate) {
+          this.size += this.pulsateDirection * this.pulsateSpeed;
+          
+          if (this.size > this.originalSize * 1.5) {
+            this.pulsateDirection = -1;
+          } else if (this.size < this.originalSize * 0.5) {
+            this.pulsateDirection = 1;
+          }
+        }
+        
+        // Bounce off edges with slight randomization
+        if (this.x < 0 || this.x > canvas.width) {
+          this.vx = -this.vx * (0.9 + Math.random() * 0.2);
+          this.x = this.x < 0 ? 0 : canvas.width;
+        }
+        if (this.y < 0 || this.y > canvas.height) {
+          this.vy = -this.vy * (0.9 + Math.random() * 0.2);
+          this.y = this.y < 0 ? 0 : canvas.height;
+        }
+        
+        // Slight random movement
+        this.vx += (Math.random() - 0.5) * 0.01;
+        this.vy += (Math.random() - 0.5) * 0.01;
+        
+        // Dampen velocity
+        this.vx *= 0.995;
+        this.vy *= 0.995;
       }
       
       draw() {
         if (!ctx) return;
+        
+        // Draw glow effect
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        const gradient = ctx.createRadialGradient(
+          this.x, this.y, 0,
+          this.x, this.y, this.size * 3
+        );
+        gradient.addColorStop(0, this.color);
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        
+        ctx.fillStyle = gradient;
+        ctx.globalAlpha = 0.3 * intensity;
+        ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw particle
+        ctx.beginPath();
         ctx.fillStyle = this.color;
+        ctx.globalAlpha = 0.7 * intensity;
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
       }
     }
@@ -106,19 +185,10 @@ export const AmbientBackground: React.FC<AmbientBackgroundProps> = ({
       particles.push(new Particle());
     }
     
-    // Draw gradient background
-    const drawBackground = () => {
-      if (!ctx) return;
-      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      gradient.addColorStop(0, backgroundGradient[0]);
-      gradient.addColorStop(1, backgroundGradient[1]);
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    };
-    
     // Draw connections between particles
     const drawConnections = () => {
       if (!ctx) return;
+      
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
@@ -126,43 +196,40 @@ export const AmbientBackground: React.FC<AmbientBackgroundProps> = ({
           const distance = Math.sqrt(dx * dx + dy * dy);
           
           if (distance < connectDistance) {
+            // Create gradient line
+            const gradient = ctx.createLinearGradient(
+              particles[i].x, 
+              particles[i].y, 
+              particles[j].x, 
+              particles[j].y
+            );
+            
+            gradient.addColorStop(0, particles[i].color);
+            gradient.addColorStop(1, particles[j].color);
+            
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
             
             // Calculate opacity based on distance
-            const opacity = 1 - (distance / connectDistance);
+            const opacity = (1 - (distance / connectDistance)) * 0.4 * intensity;
             
-            switch (theme) {
-              case 'cosmic':
-                ctx.strokeStyle = `rgba(139, 92, 246, ${opacity * 0.2})`;
-                break;
-              case 'galaxy':
-                ctx.strokeStyle = `rgba(123, 104, 238, ${opacity * 0.2})`;
-                break;
-              case 'aurora':
-                ctx.strokeStyle = `rgba(16, 185, 129, ${opacity * 0.2})`;
-                break;
-              case 'retrowave':
-                ctx.strokeStyle = `rgba(255, 0, 255, ${opacity * 0.2})`;
-                break;
-              default:
-                ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.2})`;
-            }
-            
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = gradient;
+            ctx.globalAlpha = opacity;
+            ctx.lineWidth = 0.5;
             ctx.stroke();
           }
         }
       }
+      
+      ctx.globalAlpha = 1;
     };
     
     // Animation loop
     const animate = () => {
       if (!ctx) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      drawBackground();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       // Update and draw particles
       for (let i = 0; i < particles.length; i++) {
@@ -175,20 +242,36 @@ export const AmbientBackground: React.FC<AmbientBackgroundProps> = ({
       requestAnimationFrame(animate);
     };
     
+    // Start animation
     animate();
     
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
+    // Handle window resize
+    const handleResize = () => {
+      resizeCanvas();
+      
+      // Reset particle positions on resize
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].x = Math.random() * canvas.width;
+        particles[i].y = Math.random() * canvas.height;
+      }
     };
-  }, [theme]);
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [theme, intensity]);
   
   return (
     <canvas 
       ref={canvasRef} 
       className={cn(
-        "fixed top-0 left-0 w-full h-full pointer-events-none z-0 opacity-20",
+        "fixed top-0 left-0 w-full h-full pointer-events-none z-0 opacity-30",
         className
       )} 
     />
   );
 };
+
+export default AmbientBackground;
