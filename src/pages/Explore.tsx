@@ -4,16 +4,16 @@ import ParticleBackground from "@/components/ParticleBackground";
 import Navbar from "@/components/Navbar";
 import ProfileCard from "@/components/ProfileCard";
 import AnimatedButton from "@/components/AnimatedButton";
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, Globe, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Explore = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [profiles, setProfiles] = useState<any[]>([]);
   const [filteredProfiles, setFilteredProfiles] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   // Sample profile data for demo
   const sampleProfiles = [
@@ -98,23 +98,9 @@ const Explore = () => {
   ];
 
   useEffect(() => {
-    // Simulate API call to fetch profiles
-    const fetchProfiles = async () => {
-      setIsLoading(true);
-      try {
-        // In a real app, this would be an API call
-        setTimeout(() => {
-          setProfiles(sampleProfiles);
-          setFilteredProfiles(sampleProfiles);
-          setIsLoading(false);
-        }, 1000);
-      } catch (error) {
-        console.error("Error fetching profiles:", error);
-        setIsLoading(false);
-      }
-    };
-
-    fetchProfiles();
+    // Set profiles directly without loading check
+    setProfiles(sampleProfiles);
+    setFilteredProfiles(sampleProfiles);
   }, []);
 
   useEffect(() => {
@@ -183,30 +169,9 @@ const Explore = () => {
           <div className="absolute top-20 left-10 w-32 h-32 rounded-full bg-accent/5 blur-3xl opacity-30 animate-pulse-glow"></div>
           <div className="absolute bottom-10 right-10 w-40 h-40 rounded-full bg-cosmic-highlight/5 blur-3xl opacity-20 animate-pulse-glow" style={{ animationDelay: "1s" }}></div>
 
-          {/* Profiles grid */}
+          {/* Profiles grid - always show profiles without loading check */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
-            {isLoading ? (
-              // Loading skeleton
-              Array.from({ length: 6 }).map((_, index) => (
-                <div 
-                  key={index}
-                  className="glassmorphism rounded-2xl p-6 h-80 animate-pulse"
-                >
-                  <div className="flex flex-col items-center">
-                    <div className="w-24 h-24 rounded-full bg-white/10 mb-4"></div>
-                    <div className="h-6 w-36 bg-white/10 rounded mb-2"></div>
-                    <div className="h-4 w-24 bg-white/10 rounded mb-4"></div>
-                    <div className="h-4 w-full bg-white/10 rounded mb-2"></div>
-                    <div className="h-4 w-full bg-white/10 rounded mb-2"></div>
-                    <div className="h-4 w-3/4 bg-white/10 rounded mb-4"></div>
-                    <div className="flex gap-2">
-                      <div className="w-8 h-8 rounded-full bg-white/10"></div>
-                      <div className="w-8 h-8 rounded-full bg-white/10"></div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : filteredProfiles.length > 0 ? (
+            {filteredProfiles.length > 0 ? (
               filteredProfiles.map((profile) => (
                 <Link
                   key={profile.id}
