@@ -32,32 +32,13 @@ const Profile = () => {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   
-  const { data: fetchedProfile, isLoading: isRealLoading, error: realError } = useProfile(username || "");
-  const isLoading = false;
-  const error = false;
+  const safeUsername = username || "stellar_coder";
+  
+  const { data: profileData, isLoading, error } = useProfile(safeUsername);
   const updateProfile = useUpdateProfile();
   
   const [theme, setTheme] = useState<ProfileTheme>("neon");
   
-  const stellarCoderProfile = {
-    id: user?.id || "demo-user-id",
-    name: "Stellar Coder",
-    username: "stellar_coder",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80",
-    status: "Full-Stack Developer",
-    bio: "Building the future with code. React enthusiast and open source contributor. Creating digital experiences that inspire and innovate.",
-    featured: "Currently working on a revolutionary space travel app that will change how we think about interstellar journeys. Looking for passionate collaborators to join this cosmic adventure!",
-    socialLinks: [
-      { platform: "GitHub", url: "https://github.com" },
-      { platform: "Twitter", url: "https://twitter.com" },
-      { platform: "LinkedIn", url: "https://linkedin.com" },
-      { platform: "Discord", url: "https://discord.com" },
-    ] as SocialLink[],
-    theme: "neon" as ProfileTheme
-  };
-  
-  const profileData = stellarCoderProfile;
-
   useEffect(() => {
     if (profileData?.theme) {
       setTheme(profileData.theme as ProfileTheme);
@@ -66,7 +47,15 @@ const Profile = () => {
 
   const isOwner = true;
 
-  const userData = profileData;
+  const userData = profileData || {
+    name: "",
+    username: "",
+    avatar: "",
+    status: "",
+    bio: "",
+    featured: "",
+    socialLinks: [] as SocialLink[],
+  };
 
   const themeConfigs = {
     default: {
@@ -150,14 +139,12 @@ const Profile = () => {
   };
 
   const handleSaveProfile = (updatedData: typeof userData) => {
-    toast({
-      title: "Profile updated!",
-      description: "Your profile has been successfully updated.",
-    });
-    
-    Object.assign(stellarCoderProfile, {
-      ...updatedData,
-      theme: theme,
+    updateProfile.mutate({
+      profileData: {
+        ...updatedData,
+        theme,
+      },
+      userId: userData.id || "demo-user-id",
     });
     
     setIsEditing(false);
@@ -204,7 +191,7 @@ const Profile = () => {
 
         {theme === "galaxy" && (
           <>
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071')] bg-cover bg-center opacity-20 z-0" />
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534790108377-be9c29b29330?q=80&w=2071')] bg-cover bg-center opacity-20 z-0" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(123,104,238,0.2),transparent_70%)] z-0" />
           </>
         )}
@@ -219,6 +206,29 @@ const Profile = () => {
       </>
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-cosmic">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent mx-auto mb-4"></div>
+          <p className="text-cosmic-foreground">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !profileData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-cosmic">
+        <div className="text-center max-w-md p-6 bg-cosmic-dark rounded-lg border border-white/10">
+          <h2 className="text-xl font-bold text-white mb-2">Profile Not Found</h2>
+          <p className="text-cosmic-foreground/80 mb-4">The profile you're looking for doesn't seem to exist.</p>
+          <Link to="/" className="text-accent hover:underline">Return to Home</Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -329,7 +339,7 @@ const Profile = () => {
                     </p>
                     
                     <SocialLinks 
-                      links={userData.socialLinks} 
+                      links={userData.socialLinks || []} 
                       className="justify-center md:justify-start"
                     />
                   </div>
@@ -559,7 +569,11 @@ const Profile = () => {
 
       <Dialog open={isEditing && isOwner} onOpenChange={setIsEditing}>
         <DialogContent className="sm:max-w-[600px] bg-cosmic-dark border-white/10">
-          <ProfileEditor userData={userData} onSave={handleSaveProfile} onCancel={() => setIsEditing(false)} />
+          <ProfileEditor 
+            userData={userData} 
+            onSave={handleSaveProfile} 
+            onCancel={() => setIsEditing(false)} 
+          />
         </DialogContent>
       </Dialog>
     </div>
@@ -567,4 +581,3 @@ const Profile = () => {
 };
 
 export default Profile;
-

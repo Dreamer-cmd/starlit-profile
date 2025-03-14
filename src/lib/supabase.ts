@@ -44,7 +44,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true
   },
   global: {
-    fetch: (...args) => {
+    fetch: (...args: Parameters<typeof fetch>) => {
       // Add custom fetch handling for debugging if needed
       console.log('Supabase fetch:', args[0]);
       return fetch(...args);
