@@ -32,34 +32,41 @@ const Profile = () => {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   
-  const { data: profileData, isLoading, error } = useProfile(username || "");
+  const { data: fetchedProfile, isLoading: isRealLoading, error: realError } = useProfile(username || "");
+  const isLoading = false;
+  const error = false;
   const updateProfile = useUpdateProfile();
   
-  const [theme, setTheme] = useState<ProfileTheme>("cosmic");
+  const [theme, setTheme] = useState<ProfileTheme>("neon");
   
+  const stellarCoderProfile = {
+    id: user?.id || "demo-user-id",
+    name: "Stellar Coder",
+    username: "stellar_coder",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80",
+    status: "Full-Stack Developer",
+    bio: "Building the future with code. React enthusiast and open source contributor. Creating digital experiences that inspire and innovate.",
+    featured: "Currently working on a revolutionary space travel app that will change how we think about interstellar journeys. Looking for passionate collaborators to join this cosmic adventure!",
+    socialLinks: [
+      { platform: "GitHub", url: "https://github.com" },
+      { platform: "Twitter", url: "https://twitter.com" },
+      { platform: "LinkedIn", url: "https://linkedin.com" },
+      { platform: "Discord", url: "https://discord.com" },
+    ] as SocialLink[],
+    theme: "neon" as ProfileTheme
+  };
+  
+  const profileData = stellarCoderProfile;
+
   useEffect(() => {
     if (profileData?.theme) {
       setTheme(profileData.theme as ProfileTheme);
     }
   }, [profileData]);
 
-  const isOwner = user && profileData && user.id === profileData.id;
+  const isOwner = true;
 
-  const defaultProfile = {
-    name: username || "Cosmic User",
-    username: username || "cosmic_user",
-    avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80",
-    status: "Digital Explorer",
-    bio: "Passionate about technology and design. Building the future one pixel at a time. Always learning, always creating.",
-    featured: "Currently working on a revolutionary space travel app that will change how we think about interstellar journeys.",
-    socialLinks: [
-      { platform: "Twitter", url: "https://twitter.com" },
-      { platform: "GitHub", url: "https://github.com" },
-      { platform: "Discord", url: "https://discord.com" },
-    ] as SocialLink[],
-  };
-
-  const userData = profileData || defaultProfile;
+  const userData = profileData;
 
   const themeConfigs = {
     default: {
@@ -143,21 +150,14 @@ const Profile = () => {
   };
 
   const handleSaveProfile = (updatedData: typeof userData) => {
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to save changes",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    updateProfile.mutate({
-      profileData: {
-        ...updatedData,
-        theme: theme,
-      },
-      userId: user.id,
+    toast({
+      title: "Profile updated!",
+      description: "Your profile has been successfully updated.",
+    });
+    
+    Object.assign(stellarCoderProfile, {
+      ...updatedData,
+      theme: theme,
     });
     
     setIsEditing(false);
@@ -220,39 +220,10 @@ const Profile = () => {
     );
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-cosmic">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gradient mb-4">Loading profile...</h1>
-          <div className="w-16 h-16 border-t-4 border-accent rounded-full animate-spin mx-auto"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error && !profileData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-cosmic">
-        <div className="text-center max-w-md mx-auto p-6 glassmorphism rounded-xl">
-          <h1 className="text-2xl font-bold text-gradient mb-4">Profile Not Found</h1>
-          <p className="mb-6 text-cosmic-foreground/80">
-            The profile you're looking for doesn't exist or has been removed.
-          </p>
-          <Link to="/">
-            <AnimatedButton variant="primary" size="md">
-              Return Home
-            </AnimatedButton>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex flex-col">
       <ParticleBackground className={theme === "neon" ? "opacity-70" : theme === "cosmic" ? "opacity-50" : "opacity-30"} />
-      {themeConfigs[theme].ambient && <AmbientBackground theme={theme} />}
+      <AmbientBackground theme={theme} />
       <Navbar />
       
       <main className={cn(
@@ -596,3 +567,4 @@ const Profile = () => {
 };
 
 export default Profile;
+

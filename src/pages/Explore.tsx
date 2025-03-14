@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import ParticleBackground from "@/components/ParticleBackground";
 import Navbar from "@/components/Navbar";
@@ -15,21 +14,8 @@ const Explore = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [filteredProfiles, setFilteredProfiles] = useState<any[]>([]);
 
-  // Sample profile data for demo
+  // Sample profile data with stellar_coder featured first
   const sampleProfiles = [
-    {
-      id: 1,
-      username: "cosmic_voyager",
-      name: "Cosmic Voyager",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80",
-      status: "Digital Explorer",
-      bio: "Exploring the frontiers of technology and design. Always looking for the next big challenge.",
-      theme: "cosmic",
-      socialLinks: [
-        { platform: "Twitter", url: "https://twitter.com" },
-        { platform: "GitHub", url: "https://github.com" },
-      ],
-    },
     {
       id: 2,
       username: "stellar_coder",
@@ -41,6 +27,19 @@ const Explore = () => {
       socialLinks: [
         { platform: "GitHub", url: "https://github.com" },
         { platform: "LinkedIn", url: "https://linkedin.com" },
+      ],
+    },
+    {
+      id: 1,
+      username: "cosmic_voyager",
+      name: "Cosmic Voyager",
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80",
+      status: "Digital Explorer",
+      bio: "Exploring the frontiers of technology and design. Always looking for the next big challenge.",
+      theme: "cosmic",
+      socialLinks: [
+        { platform: "Twitter", url: "https://twitter.com" },
+        { platform: "GitHub", url: "https://github.com" },
       ],
     },
     {
@@ -162,6 +161,24 @@ const Explore = () => {
                   Filter
                 </AnimatedButton>
               </div>
+            </div>
+          </div>
+
+          {/* Highlight for stellar_coder */}
+          <div className="mb-8 p-4 rounded-lg bg-accent/10 border border-accent/30">
+            <div className="flex items-center">
+              <div className="mr-4">
+                <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
+              </div>
+              <p className="text-cosmic-foreground">
+                <span className="font-bold">Try out our example profile: </span>
+                <Link to="/stellar_coder" className="text-accent hover:underline">
+                  Check out Stellar Coder's profile
+                </Link>
+                <span className="ml-2 text-sm text-cosmic-foreground/60">
+                  (This profile has all features enabled for demo purposes)
+                </span>
+              </p>
             </div>
           </div>
 

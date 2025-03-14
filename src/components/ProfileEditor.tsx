@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { SocialLink } from "@/components/SocialLinks";
 import { DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Plus, Trash2, Save, X } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 type ProfileEditorProps = {
   userData: {
@@ -47,11 +47,22 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({
       ]);
       setNewSocialPlatform("");
       setNewSocialUrl("");
+      
+      toast({
+        title: "Social link added",
+        description: `Added ${newSocialPlatform} to your profile`,
+      });
     }
   };
 
   const handleRemoveSocialLink = (index: number) => {
+    const removed = socialLinks[index];
     setSocialLinks(socialLinks.filter((_, i) => i !== index));
+    
+    toast({
+      title: "Social link removed",
+      description: `Removed ${removed.platform} from your profile`,
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
