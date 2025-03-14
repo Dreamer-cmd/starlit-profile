@@ -1,7 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
-import { ProfileType, SocialLinkType } from '@/lib/supabase';
+import { supabase, ProfileType } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
 import { SocialLink } from '@/components/SocialLinks';
 
@@ -22,7 +21,7 @@ export const useProfile = (username: string) => {
       const { data: socialLinks, error: socialLinksError } = await supabase
         .from('social_links')
         .select('*')
-        .eq('profile_id', profiles.id);
+        .eq('profile_id', profiles?.id);
 
       if (socialLinksError) {
         throw new Error(socialLinksError.message);
@@ -30,10 +29,10 @@ export const useProfile = (username: string) => {
 
       return {
         ...profiles,
-        socialLinks: socialLinks.map(link => ({ 
+        socialLinks: socialLinks ? socialLinks.map(link => ({ 
           platform: link.platform, 
           url: link.url 
-        })) as SocialLink[]
+        })) as SocialLink[] : []
       };
     },
   });
