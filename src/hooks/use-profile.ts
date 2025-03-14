@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase, ProfileType } from '@/lib/supabase';
+import { supabase, ProfileType, formatSupabaseError } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
 import { SocialLink } from '@/components/SocialLinks';
 
@@ -26,6 +26,26 @@ export const useProfile = (username: string) => {
             socialLinks: [
               { platform: 'GitHub', url: 'https://github.com' },
               { platform: 'LinkedIn', url: 'https://linkedin.com' },
+              { platform: 'Twitter', url: 'https://twitter.com' },
+              { platform: 'Instagram', url: 'https://instagram.com' },
+            ] as SocialLink[]
+          };
+        }
+        
+        // You could add more demo profiles here for testing
+        if (username === 'cosmic_dev') {
+          return {
+            id: 'cosmic-dev-id',
+            name: 'Cosmic Developer',
+            username: 'cosmic_dev',
+            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
+            status: 'UI/UX Designer',
+            bio: 'Creating beautiful interfaces that users love. Design systems enthusiast.',
+            featured: 'Just launched a new design system for enterprise applications.',
+            theme: 'cosmic',
+            socialLinks: [
+              { platform: 'Dribbble', url: 'https://dribbble.com' },
+              { platform: 'Behance', url: 'https://behance.net' },
             ] as SocialLink[]
           };
         }
@@ -70,9 +90,52 @@ export const useUpdateProfile = () => {
     onError: (error: Error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update profile",
+        description: formatSupabaseError(error) || "Failed to update profile",
         variant: "destructive",
       });
     },
+  });
+};
+
+// Mock function to fetch all profiles for the explore page
+export const useAllProfiles = () => {
+  return useQuery({
+    queryKey: ['profiles'],
+    queryFn: async () => {
+      // Return demo profiles
+      return [
+        {
+          id: 'demo-user-id',
+          name: 'Stellar Coder',
+          username: 'stellar_coder',
+          avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
+          status: 'Full-Stack Developer',
+          bio: 'Building the future with code. React enthusiast and open source contributor.',
+          featured: 'Currently working on a revolutionary space travel app that will change how we think about interstellar journeys.',
+          theme: 'neon',
+        },
+        {
+          id: 'cosmic-dev-id',
+          name: 'Cosmic Developer',
+          username: 'cosmic_dev',
+          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
+          status: 'UI/UX Designer',
+          bio: 'Creating beautiful interfaces that users love. Design systems enthusiast.',
+          featured: 'Just launched a new design system for enterprise applications.',
+          theme: 'cosmic',
+        },
+        {
+          id: 'tech-wizard-id',
+          name: 'Tech Wizard',
+          username: 'tech_wizard',
+          avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
+          status: 'DevOps Engineer',
+          bio: 'Automating everything. Kubernetes enthusiast and cloud native advocate.',
+          featured: 'Building the future of cloud infrastructure.',
+          theme: 'aurora',
+        }
+      ];
+    },
+    retry: false,
   });
 };

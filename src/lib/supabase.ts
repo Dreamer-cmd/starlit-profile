@@ -27,11 +27,30 @@ export type Database = {
         Update: Partial<SocialLinkType>;
       };
     };
+    Functions: {
+      [key: string]: unknown;
+    };
+    Enums: {
+      [key: string]: unknown;
+    };
   };
 };
 
-// Create the Supabase client
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+// Create the Supabase client with updated options for better error handling
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  },
+  global: {
+    fetch: (...args) => {
+      // Add custom fetch handling for debugging if needed
+      console.log('Supabase fetch:', args[0]);
+      return fetch(...args);
+    }
+  }
+});
 
 // Profile type
 export type ProfileType = {
@@ -55,4 +74,14 @@ export type SocialLinkType = {
   platform: string;
   url: string;
   created_at?: string;
+};
+
+// Helper function to format error messages from Supabase
+export const formatSupabaseError = (error: Error | { message: string } | null | unknown): string => {
+  if (!error) return 'An unknown error occurred';
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    return String(error.message);
+  }
+  return 'An unknown error occurred';
 };
